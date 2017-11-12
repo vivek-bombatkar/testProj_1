@@ -17,38 +17,67 @@ hdlr.setFormatter(frmt)
 lgr.addHandler(hdlr)
 
 PATH= r'C:\VIVEK\PROJECTS\practice_1\working'
-PATH= PATH + "\data_" + time.strftime('%d%m%Y_%H%M%S') + ".txt"
 URL = "https://www.udemy.com/gcp-data-engineer-and-cloud-architect/"
-if len(sys.argv) == 2:
+if len(sys.argv) == 3:
     URL=sys.argv[1]
-    print("URL : " + URL)
+    PATH=sys.argv[2]
+    lgr.info("URL : " + URL)
+    lgr.info("PATH : " + PATH)
+
+PATH= PATH + "\data_" + time.strftime('%d%m%Y_%H%M%S') + ".txt"
 
 def getRequests(URL):
-    lgr.info("calling page : " + URL)
-    result=rq.get(URL)
-    lgr.info("call finish : " + URL)
+    try:
+        lgr.info("calling page : " + URL)
+        result=rq.get(URL).text
+        lgr.info("call finish : " + URL)
+    except:
+        lgr.error(sys.exc_info()[0])
+        return ""
     return result
 
 def getUrllib2(URL):
     return ur2.urlopen(URL)
 
 def getFile(path):
-    return open(path,mode='w')
+    return open(path,mode='a')
 
 def exeSQL(sql,v1,v2):
-    lgr.info(sql)
-    con=cntr.connect(host='localhost',database='sakila',user='root',password='root')
-    cur=con.cursor()
-    cur.execute(sql,(v1,v2))
-    con.commit()
-    return ""
+    try:
+        lgr.info(sql,v1,v2)
+        con=cntr.connect(host='localhost',database='sakila',user='root',password='root')
+        cur=con.cursor()
+        cur.execute(sql,(v1,v2))
+        con.commit()
+    except:
+        lgr.error(sys.exc_info()[0])
+        return "FAIL"
+    return "DONE"
+
+def getURLS(data):
+    links=data.find("a href")
+    if links == -1:
+        return None,0
+    startQ=data.find('"',links)
+    endQ=data.find('"',startQ+1)
+    url=data[startQ+1:endQ]
+    return url,endQ
 
 def main():
-    #print("getRequests " + getRequests(URL).text)
-    getFile(PATH).write(getRequests(URL).text)
-    #"insert into batch_test (id,URL) values ('{0}','{1}')".format(time.strftime('%H%M%S'),"YYY"
-    print exeSQL("insert into batch_test (id,URL) values (%s,%s)",time.strftime('%H%M%S'),URL)
-    #print("getUrllib2 " + getUrllib2(URL))
+    urlText=getRequests(URL)
+    if urlText <> "":
+        while True:
+            url,n  = getURLS(urlText)
+            urlText = urlText[n:]
+            if url:
+                if "https://" in url:
+                    getFile(PATH).write(url+'\n')
+            else:
+                break
+        #"insert into batch_test (id,URL) values ('{0}','{1}')".format(time.strftime('%H%M%S'),"YYY"
+        lgr.info(exeSQL("insert into batch_test (id,URL) values (%s,%s)",time.strftime('%H%M%S'),URL))
+    else:
+        lgr.info("NOTHING HAPPENED")
 
 if __name__ == '__main__':
     main()
