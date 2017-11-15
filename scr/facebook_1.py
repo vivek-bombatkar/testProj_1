@@ -16,4 +16,5 @@ resp = urllib.urlopen(url).read()
 
 me = json.loads(resp)
 
-pprint.pprint(me)
+
+print(me)
