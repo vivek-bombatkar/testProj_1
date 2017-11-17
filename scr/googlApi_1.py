@@ -1,21 +1,21 @@
-
+import config
 import pprint
-
+import json
 from googleapiclient.discovery import build
 
-
 def main():
-  # Build a service object for interacting with the API. Visit
-  # the Google APIs Console <http://code.google.com/apis/console>
-  # to get an API key for your own application.
-  service = build("customsearch", "v1",
-            developerKey="AIzaSyB9PtUKzP45-7OKXAvctf3YXzj1p6jB4h4")
+  service = build("customsearch", "v1",developerKey=config.developerKey_google)
 
-  res = service.cse().list(
-      q='vidhi',
+  result = service.cse().list(
+      q='bombatkar',
       cx='017576662512468239146:omuauf_lfve',
     ).execute()
-  pprint.pprint(res)
+  #json.dumps(
+  res = json.dumps(result)
+  print json.dumps(result["items"])
+  #for res1 in res:
+  #  res = json.dumps(res1)
+  #  pprint.pprint(res1[0])
 
 if __name__ == '__main__':
   main()
