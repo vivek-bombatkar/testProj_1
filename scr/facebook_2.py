@@ -12,12 +12,15 @@ def searchFB(type,string,fbGraph):
 
 def main():
     fbGraph = getFacebookGraph(config.ACCESS_TOKEN_FB)
-    # msg = graph.get_object(id='123',fields='message')
+    msg = fbGraph.get_object(id='161997914535776',fields='name')
+    print msg
+
     msg = getSiteDesc('https%3A//stackoverflow.com/questions/11510850/python-facebook-api-need-a-working-example',fbGraph)
     print msg['og_object']['description']
-    searchResult = searchFB('user','india',fbGraph)
+    '''searchResult = searchFB('user','india',fbGraph)
     for res in searchResult:
         print res
+    '''
 
 if __name__ == '__main__':
     main()
