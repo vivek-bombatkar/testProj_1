@@ -10,7 +10,7 @@ oauth = OAuth(config.ACCESS_TOKEN, config.ACCESS_SECRET, config.CONSUMER_KEY, co
 #2.
 twitter_stream = TwitterStream(auth=oauth)
 #3.
-iterator = twitter_stream.statuses.filter(track="India", language="en")
+iterator = twitter_stream.statuses.filter(track="papa", language="en")
 
 tweet_count = 10
 for tweet in iterator:
