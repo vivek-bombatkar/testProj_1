@@ -15,6 +15,5 @@ def main():
     for s in res['items']:
         print s['snippet']
 
-
 if __name__ == '__main__':
     main()

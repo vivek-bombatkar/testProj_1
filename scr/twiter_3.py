@@ -25,7 +25,7 @@ def main():
     stream=getTweetSTream()
     result=stream.filter(track=["python"])
     print result
-    
+
     '''
     tweets_data = []
     tweets_file = open("logs/te.txt",mode="r")
