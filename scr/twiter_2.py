@@ -3,29 +3,30 @@ from twitter import Twitter, OAuth, TwitterHTTPError, TwitterStream
 from tweepy import OAuthHandler
 import tweepy
 
-def getTwitStream(strSearch):
+def getTwitStream():
     auth = OAuth(config.ACCESS_TOKEN, config.ACCESS_SECRET, config.CONSUMER_KEY, config.CONSUMER_SECRET)
-    twitStram = TwitterStream(auth=auth)
-    return twitStram.statuses.filter(track=strSearch, language="en")
+    return TwitterStream(auth=auth)
 
 def getTwipy():
     auth = OAuthHandler(config.CONSUMER_KEY, config.CONSUMER_SECRET)
     auth.set_access_token(config.ACCESS_TOKEN, config.ACCESS_SECRET)
-    api = tweepy.API(auth)
-    return tweepy.Cursor(api.home_timeline).items()
+    return  tweepy.API(auth)
 
 def main():
-    result = getTwitStream("nuremberg")
+    twitStream = getTwitStream()
+    result = twitStream.statuses.filter(track="papa") #, language="en"
     tweet_count = 10
     for twit in result:
         tweet_count -= 1
         print twit["text"]
+        print twit["lang"]
+        #print twit["country"]
         if tweet_count <= 0:
             break
-    result = getTwipy()
+    api = getTwipy()
+    result = tweepy.Cursor(api.home_timeline).items()
     for s in result:
         print s.text
 
 if __name__ == '__main__':
     main()
-
