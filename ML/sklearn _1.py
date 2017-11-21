@@ -11,6 +11,8 @@ Y = ['bad','good','good','good','bad','good']
 X = [[30],[33],[28],[35],[30],]
 Y = ['1kid','2kid','1kid','2kid','1kid']
 
+print X,Y
+
 def getDecisionTreeClassifier():
     return tree.DecisionTreeClassifier()
 def getRandomForestClassifier():
