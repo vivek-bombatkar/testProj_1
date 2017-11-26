@@ -3,15 +3,16 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
 from sklearn import tree
+import matplotlib.pyplot as plt
+import pandas
+from textblob import TextBlob
 
-'''
-X = [[1],[4],[7],[8],[6],[3]]
-Y = ['bad','good','good','good','bad','good']
-'''
-X = [[30],[33],[28],[35],[30],]
-Y = ['1kid','2kid','1kid','2kid','1kid']
-
-print(X,Y)
+data = pandas.read_csv("data.csv",sep=',',names=['age','kids'])
+#female's age
+X=data[['age']]
+#number of kids
+Y=data[['kids']]
+#print(X,Y)
 
 def getDecisionTreeClassifier():
     return tree.DecisionTreeClassifier()
@@ -24,34 +25,40 @@ def getLogisticRegression():
 def getGaussianNB():
     return GaussianNB()
 
-classifier_1 = getDecisionTreeClassifier()
-classifier_1 =   classifier_1.fit(X,Y)
+def printRes(*args):
+    print("{0} says if your age is {1} then you might have {2} kid/s."
+          .format(args[0],args[1],args[2]))
+#translate using TextBlob
+    print( TextBlob("{0} says if your age is {1} then you might have {2} kid/s."
+          .format(args[0],args[1],args[2])).translate(to="hi"))
 
-classifier_2 = getRandomForestClassifier()
-classifier_2 =   classifier_2.fit(X,Y)
-
-classifier_3 = getKNeighborsClassifier()
-classifier_3 = classifier_3.fit(X,Y)
-
-classifier_4 = getLogisticRegression()
-classifier_4 = classifier_4.fit(X,Y)
-
-classifier_5 = getGaussianNB()
-classifier_5 = classifier_5.fit(X,Y)
-
+classifier_1 = getDecisionTreeClassifier().fit( X,Y)
+classifier_2 = getRandomForestClassifier().fit(X,Y)
+classifier_3 = getKNeighborsClassifier().fit(X,Y)
+classifier_4 = getLogisticRegression().fit(X,Y)
+classifier_5 = getGaussianNB().fit(X,Y)
+#new age to predict
 i=32
-print ("{0} - {1} : {2}".format("DecisionTreeClassifier", str(i), classifier_1.predict([[i]])))
-print ("{0} - {1} : {2}".format("RandomForestClassifier", str(i), classifier_2.predict([[i]])))
-print ("{0} - {1} : {2} ".format("KNeighborsClassifier", str(i), classifier_3.predict([[i]])))
-print ("{0} - {1} : {2} ".format("LogisticRegression", str(i), classifier_4.predict([[i]])))
-print ("{0} - {1} : {2} \n".format("LogisticRegression", str(i), classifier_5.predict([[i]])))
+printRes("DecisionTreeClassifier", str(i), classifier_1.predict([[i]]))
+printRes("RandomForestClassifier", str(i), classifier_2.predict([[i]]))
+printRes("KNeighborsClassifier", str(i), classifier_3.predict([[i]]))
+printRes("LogisticRegression", str(i), classifier_4.predict([[i]]))
+printRes("GaussianNB", str(i), classifier_5.predict([[i]]))
+
+#visualize results
+plt.scatter(X, Y)
+plt.plot(X, classifier_5.predict(X))
+plt.show()
 
 '''
-for i in range(1,10):
-    print ("{0} - {1} : {2}".format("DecisionTreeClassifier", str(i), classifier_1.predict([[i]])))
-    print ("{0} - {1} : {2}".format("RandomForestClassifier", str(i) ,classifier_2.predict([[i]])))
-    print ("{0} - {1} : {2} ".format("KNeighborsClassifier", str(i) ,classifier_3.predict([[i]])))
-    print ("{0} - {1} : {2} \n".format("LogisticRegression", str(i) ,classifier_4.predict([[i]])))
-    print ("{0} - {1} : {2} \n".format("LogisticRegression", str(i) ,classifier_4.predict([[i]])))
-
+Results:
+DecisionTreeClassifier कहता है कि आपकी उम्र 32 है तो आपके पास [2] बच्चा / एस हो सकता है
+RandomForestClassifier says if your age is 32 then you might have [2] kid/s.
+RandomForestClassifier कहते हैं कि आपकी उम्र 32 है, तो आपके पास [2] बच्चा / एस हो सकता है
+KNeighborsClassifier says if your age is 32 then you might have [1] kid/s.
+KNeighborsClassifier कहते हैं कि अगर आपकी उम्र 32 है तो आपके पास [1] बच्चा / एस हो सकता है
+LogisticRegression says if your age is 32 then you might have [1] kid/s.
+उपनिवेशवाद का कहना है कि अगर आपकी उम्र 32 है तो आपके पास [1] बच्चे / एस हो सकते हैं
+GaussianNB says if your age is 32 then you might have [2] kid/s.
+गाऊसीएनबी का कहना है कि अगर आपकी उम्र 32 है तो आपके पास [2] बच्चे / एस हो सकते हैं
 '''
