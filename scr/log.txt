@@ -1,0 +1,4 @@
+this is info
+this is warn
+this is error
+this is testFun

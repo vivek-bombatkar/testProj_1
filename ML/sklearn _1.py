@@ -48,6 +48,8 @@ printRes("GaussianNB", str(i), classifier_5.predict([[i]]))
 #visualize results
 plt.scatter(X, Y)
 plt.plot(X, classifier_5.predict(X))
+plt.xlabel("age")
+plt.ylabel("kid/s")
 plt.show()
 
 '''
@@ -62,3 +64,5 @@ LogisticRegression says if your age is 32 then you might have [1] kid/s.
 GaussianNB says if your age is 32 then you might have [2] kid/s.
 गाऊसीएनबी का कहना है कि अगर आपकी उम्र 32 है तो आपके पास [2] बच्चे / एस हो सकते हैं
 '''
+
+

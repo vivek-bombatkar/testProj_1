@@ -1,0 +1,16 @@
+this is info
+this is warn
+this is error
+this is testFun
+2017-11-10 19:59:26,239 - __main__ - INFO - this is info
+2017-11-10 19:59:26,239 - __main__ - WARNING - this is warn
+2017-11-10 19:59:26,239 - __main__ - ERROR - this is error
+2017-11-10 19:59:26,239 - __main__ - ERROR - this is testFun
+2017-11-10 20:03:13,565 - __main__ - INFO - this is info
+2017-11-10 20:03:13,565 - __main__ - WARNING - this is warn
+2017-11-10 20:03:13,565 - __main__ - ERROR - this is error
+2017-11-10 20:03:13,565 - __main__ - ERROR - this is testFun
+2017-11-10 20:33:21,032 - __main__ - INFO - this is info
+2017-11-10 20:33:21,032 - __main__ - WARNING - this is warn
+2017-11-10 20:33:21,032 - __main__ - ERROR - this is error
+2017-11-10 20:33:21,069 - __main__ - ERROR - this is testFun
