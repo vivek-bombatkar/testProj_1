@@ -6,11 +6,7 @@ app = dash.Dash()
 
 app.layout = html.Div(children=[
     html.H1(children='Hello Dash'),
-
-    html.Div(children='''
-        Dash: A web application framework for Python.
-    '''),
-
+    html.Div(children='Dash: A web application framework for Python.'),
     dcc.Graph(
         id='example-graph',
         figure={
