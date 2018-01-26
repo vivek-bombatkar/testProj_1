@@ -8,7 +8,7 @@ app = dash.Dash()
 app.layout = html.Div([
     html.Label('Dropdown'),
     dcc.Dropdown(
-        options=[ 
+        options=[
             {'label': 'New York City', 'value': 'NYC'},
             {'label': u'Montral', 'value': 'MTL'},
             {'label': 'San Francisco', 'value': 'SF'}
