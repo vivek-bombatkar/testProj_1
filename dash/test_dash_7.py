@@ -39,6 +39,8 @@ def display_output(n_clicks):
     ])
 
 
+
+
 @app.callback(
     Output('dynamic-output', 'children'),
     [Input('input-{}'.format(i), 'value') for i in range(10)])
