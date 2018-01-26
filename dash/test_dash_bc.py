@@ -15,26 +15,27 @@ app.layout = html.Div(children=[
     dcc.Input(id='input',value='',type='text'),
 
     html.Label('Result Data Set '),
-    dcc.Input(value='', type='text'),
-#type='submit',
+    html.Div(id='output'),
+
     html.Button(id='Button_1',  children='Process Data set', n_clicks=0),
-    html.Div(id='output')
+    html.Div(id=' '),
+
+    html.Label('add to bc '),
+    html.Div(id='output_bc')
 ])
 
 @app.callback(
-    Output('update_output', 'children'),
-    [Input('Button_1', 'n_clicks')],
-    [State('Button_1', 'n_clicks')])
-def update_output(b1_clicks, prev_b1_clicks):
-    if b1_clicks > prev_b1_clicks:
-        return 'Button 1 Was Clicked'.format(prev_b1_clicks, b1_clicks)
+    Output('output_bc', 'children'),
+    [Input('Button_1', 'n_clicks')])
+def update_output(n_clicks):
+    return ' # : ' + str(n_clicks)
 
-#for state_id, evend_id in id_pairs:
-#    @app.callback(Output('target', 'children'), [], [State(state_id, 'value')], [Event(event_id, 'click'))(your_callback_function)\
-#@app.callback(Output('target', 'children'), [], [State('input', 'value')], [Event('submit', 'click')])
-#def callback(state):
-#    return "callback received value: {}".format(state)
 
+@app.callback(
+    dash.dependencies.Output('output', 'children'),
+    [dash.dependencies.Input('input', 'value')])
+def update_output(n_clicks):
+    return ' # : ' + str(n_clicks)[::-1]
 
 
 if __name__ == '__main__':
