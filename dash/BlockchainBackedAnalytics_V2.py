@@ -17,28 +17,32 @@ import datetime as date
 import hashlib as hash
 
 global prev_block
-global button_n_clicks
+input_data_set = ''
+data_science_module = ''
+result_data_set = ''
 
 class Block:
-    def __init__(self, index, timestamp, data, prev_hash):
+    def __init__(self, index, timestamp, data, indexOfParent, prev_hash):
         self.index = index
         self.timestamp = timestamp
         self.data = data
+        self.indexOfParent = indexOfParent
         self.prev_hash = prev_hash
         self.hash = hash.sha256(data.encode('ascii')).hexdigest()
 
     def __repr__(self):
-        return "{0} : {1}, {2}, {3} ".format(self.index, str(self.timestamp), self.data, self.prev_hash)
+        return "{0} : {1}, {2}, {3} ".format(self.index, str(self.timestamp), self.data, self.indexOfParent, self.prev_hash)
 
 def getGenesisBlock():
-    return Block(0, date.datetime.now(), "the genesis block", "0")
+    return Block(0, date.datetime.now(), "the genesis block", 0, "0")
 
-def getNextBlock(prev_block, data):
+def getNextBlock(prev_block, data, indexOfParent ):
     index = prev_block.index + 1
     timestamp = date.datetime.now()
     data = data
+    indexOfParent = indexOfParent
     hash = prev_block.hash
-    return Block(index, timestamp, data, hash)
+    return Block(index, timestamp, data, indexOfParent, hash)
 
 #the datascience module
 def getSentimentsPolarity(inputData):
@@ -48,17 +52,17 @@ def addToBlockchain(prev_block,inputData,value_data_science_module,result_data_s
     #result = getSentimentsPolarity(inputData)
     time.sleep(1)
     #add input to bc
-    new_block = getNextBlock(prev_block, hash.sha256(inputData.encode('ascii')).hexdigest())
+    new_block = getNextBlock(prev_block, hash.sha256(inputData.encode('ascii')).hexdigest(), 0)
     bc.append(new_block)
     prev_block = new_block
     time.sleep(1)
     #add code to bc
-    new_block = getNextBlock(prev_block, hash.sha256(value_data_science_module.encode('ascii')).hexdigest())
+    new_block = getNextBlock(prev_block, hash.sha256(value_data_science_module.encode('ascii')).hexdigest(), prev_block.index)
     bc.append(new_block)
     prev_block = new_block
     time.sleep(1)
     #add result to bc
-    new_block = getNextBlock(prev_block, hash.sha256(result_data_set.encode('ascii')).hexdigest())
+    new_block = getNextBlock(prev_block, hash.sha256(result_data_set.encode('ascii')).hexdigest(), prev_block.index)
     bc.append(new_block)
     return ""
 
@@ -76,11 +80,11 @@ app.layout = html.Div(children=[
     dcc.Upload(
         id='upload_input_data_set',
         children=html.Div([
-            'Drag and Drop or ',
+            'Input Data Set - Drag and Drop or ',
             html.A('Select a File')
         ]),
         style={
-            'width': '20%',
+            'width': '50%',
             'height': '60px',
             'lineHeight': '60px',
             'borderWidth': '1px',
@@ -99,11 +103,11 @@ app.layout = html.Div(children=[
     dcc.Upload(
         id='upload_data_science_module',
         children=html.Div([
-            'Drag and Drop or ',
+            'Data_Science_Module - Drag and Drop or ',
             html.A('Select a File')
         ]),
         style={
-            'width': '20%',
+            'width': '50%',
             'height': '60px',
             'lineHeight': '60px',
             'borderWidth': '1px',
@@ -122,11 +126,11 @@ app.layout = html.Div(children=[
     dcc.Upload(
         id='upload_result_data_set',
         children=html.Div([
-            'Drag and Drop or ',
+            'Result Data Set - Drag and Drop or ',
             html.A('Select a File')
         ]),
         style={
-            'width': '20%',
+            'width': '50%',
             'height': '60px',
             'lineHeight': '60px',
             'borderWidth': '1px',
@@ -139,12 +143,6 @@ app.layout = html.Div(children=[
 
     html.Div(id='result_data_set'),
     html.Div(dt.DataTable(rows=[{}]), style={'display': 'none'}),
-###
-#    html.Label('Input Data Set  '),
-#    dcc.Textarea(id='input',value='', style={'width': '100%'}),
-
-#    html.Label('Result '),
-#    html.Div(id='output'),
 
     html.Button(id='Button_1',  children='Add to blockchain', n_clicks=0),
     html.Div(id=' '),
@@ -162,28 +160,22 @@ pre_style = {
 #show blockchain
 @app.callback(
     Output('output_bc', 'children'),
-    [Input('Button_1', 'n_clicks'),
-    Input('upload_input_data_set', 'contents'),
-    Input('upload_data_science_module', 'contents'),
-    Input('upload_result_data_set', 'contents')])
-def update_output(n_clicks,value_input_data_set,value_data_science_module,result_data_set):
+    [Input('Button_1', 'n_clicks')])
+def update_output(n_clicks):
     if n_clicks == 0:
         return ''
-    button_n_clicks = n_clicks
     prev_block = bc[len(bc)-1]
-    print(str(value_input_data_set))
-    print(str(value_data_science_module))
-    print(str(result_data_set))
-    addToBlockchain(prev_block,str(value_input_data_set),str(value_data_science_module),str(result_data_set))
+    addToBlockchain(prev_block,str(input_data_set),str(data_science_module),str(result_data_set))
 #            value="Input at blockchain index : {1}, Code at blockchain index : {2}, Result at blockchain index : {3} ,".format(str(bc[len(bc)-3].index()),str(bc[len(bc)-2].index()),str(bc[len(bc)-1].index())) ,
     return html.Div([
         html.Div([dcc.Textarea(
             #value=" # " + str(value_input_data_set) + " : " + str(value_data_science_module),
             value="blockchain index {} : Input Data Set \nblockchain index {} : Data science module / Code \nblockchain index {} : Result".format(str(bc[len(bc)-3].index),str(bc[len(bc)-2].index),str(bc[len(bc)-1].index)) ,
                                id='dynamic-output',style={'width': '100%'})]),
+        html.Div([html.H6("Index : Timestamp, HASH of the data, Parent block", style={'width': '100%'})]),
         html.Div([
             dcc.Input(
-                value='{}'.format(block),
+                value='{} : {} , {} , {}'.format(block.index,block.timestamp,block.hash,block.indexOfParent),
                 id='input-{}'.format(block.index),
                 style={'width': '100%'}
             )
@@ -194,66 +186,36 @@ def update_output(n_clicks,value_input_data_set,value_data_science_module,result
 
 #show file
 @app.callback(Output('input_data_set', 'children'),
-              [Input('upload_input_data_set', 'filename')])
-def upload_input_data_set(filename):
+              [Input('upload_input_data_set', 'filename') , Input('upload_input_data_set', 'contents')])
+def upload_input_data_set(filename, contents):
+    global input_data_set
+    input_data_set = contents
     return html.Div([
-        html.H5(filename),
+        html.H6(filename),
         html.Hr(),  # horizontal lines
     ])
 
 #show file
 @app.callback(Output('data_science_module', 'children'),
-              [Input('upload_data_science_module', 'filename')])
-def upload_data_science_module(filename):
+              [Input('upload_data_science_module', 'filename'),Input('upload_data_science_module', 'contents')])
+def upload_data_science_module(filename,contents):
+    global data_science_module
+    data_science_module = contents
     return html.Div([
-        html.H5(filename),
+        html.H6(filename),
         html.Hr(),  # horizontal lines
     ])
 
 #show file
 @app.callback(Output('result_data_set', 'children'),
-              [Input('upload_result_data_set', 'filename')])
-def upload_data_science_module(filename):
+              [Input('upload_result_data_set', 'filename'),Input('upload_result_data_set', 'contents')])
+def upload_data_science_module(filename,contents):
+    global result_data_set
+    result_data_set = contents
     return html.Div([
-        html.H5(filename),
+        html.H6(filename),
         html.Hr(),  # horizontal lines
     ])
-
-def update_output(contents):
-    if contents is not None:
-        content_type, content_string = contents.split(',')
-        if 'csv' in content_type:
-            df = pd.read_csv(io.StringIO(base64.b64decode(content_string).decode('utf-8')))
-            return html.Div([
-                dt.DataTable(rows=df.to_dict('records')),
-                html.Hr(),
-                html.Div('Raw Content'),
-                html.Pre(contents, style=pre_style)
-            ])
-        elif 'image' in content_type:
-            return html.Div([
-                html.Img(src=contents),
-                html.Hr(),
-                html.Div('Raw Content'),
-                html.Pre(contents, style=pre_style)
-            ])
-        else:
-            # xlsx will have 'spreadsheet' in `content_type` but `xls` won't
-            # have anything
-            try:
-                df = pd.read_excel(io.BytesIO(base64.b64decode(content_string)))
-                return html.Div([
-                    dt.DataTable(rows=df.to_dict('records')),
-                    html.Hr(),
-                    html.Div('Raw Content'),
-                    html.Pre(contents, style=pre_style)
-                ])
-            except:
-                return html.Div([
-                    html.Hr(),
-                    html.Div('ONLY Raw Content : ' + content_type + " : " + content_string),
-                    html.Pre(contents, style=pre_style)
-                ])
 
 app.css.append_css({
     "external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"
