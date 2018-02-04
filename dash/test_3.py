@@ -11,7 +11,7 @@ import plotly
 import io
 
 app = dash.Dash()
-
+app.config['suppress_callback_exceptions']=True
 app.scripts.config.serve_locally = True
 
 app.layout = html.Div([
@@ -33,8 +33,10 @@ app.layout = html.Div([
             'margin': '10px'
         }
     ),
-    html.Div(id='output'),
-    html.Div(dt.DataTable(rows=[{}]), style={'display': 'none'})
+    dt.DataTable(
+        id='datatable',
+        rows=[{}]
+    ),
 ])
 
 pre_style = {
@@ -43,44 +45,15 @@ pre_style = {
     'whiteSpace': 'normal'
 }
 
-
-@app.callback(Output('output', 'children'),
-              [Input('upload', 'contents')])
-def update_output(contents):
-    if contents is not None:
-        content_type, content_string = contents.split(',')
-        if 'csv' in content_type:
-            df = pd.read_csv(io.StringIO(base64.b64decode(content_string).decode('utf-8')))
-            return html.Div([
-                dt.DataTable(rows=df.to_dict('records')),
-                html.Hr(),
-                html.Div('Raw Content'),
-                html.Pre(contents, style=pre_style)
-            ])
-        elif 'image' in content_type:
-            return html.Div([
-                html.Img(src=contents),
-                html.Hr(),
-                html.Div('Raw Content'),
-                html.Pre(contents, style=pre_style)
-            ])
-        else:
-            # xlsx will have 'spreadsheet' in `content_type` but `xls` won't
-            # have anything
-            try:
-                df = pd.read_excel(io.BytesIO(base64.b64decode(content_string)))
-                return html.Div([
-                    dt.DataTable(rows=df.to_dict('records')),
-                    html.Hr(),
-                    html.Div('Raw Content'),
-                    html.Pre(contents, style=pre_style)
-                ])
-            except:
-                return html.Div([
-                    html.Hr(),
-                    html.Div('Raw Content'),
-                    html.Pre(contents, style=pre_style)
-                ])
+@app.callback(
+    Output('datatable', 'rows'),
+    [Input('upload', 'contents')])
+def update_figure(content):
+    if not content:
+        return []
+    print(content)
+    dff = pd.read_csv(io.StringIO(content))
+    return dff.to_dict('records')
 
 
 

@@ -8,6 +8,8 @@ import io
 
 app = dash.Dash()
 
+app.scripts.config.serve_locally = True
+
 app.layout = html.Div([
     html.H1('Dash Upload Component'),
     dcc.Upload(id='upload'),
