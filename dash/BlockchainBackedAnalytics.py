@@ -4,7 +4,10 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, State, Output, Event
 import time
-from textblob import TextBlob
+import pandas as pd
+import io
+import dash_table_experiments as dt
+#from textblob import TextBlob
 
 #impliment the blockhain
 import datetime as date
@@ -35,7 +38,7 @@ def getNextBlock(prev_block, data):
 
 #the datascience module
 def getSentimentsPolarity(inputData):
-    return str(TextBlob(inputData).sentiment.polarity)
+    return ""#str(TextBlob(inputData).sentiment.polarity)
 
 def addToBlockchain(prev_block,inputData):
     result = getSentimentsPolarity(inputData)
@@ -63,6 +66,29 @@ app.layout = html.Div(children=[
     html.H1(children='Blockchain Backed Analytics'),
 
     html.Label('Input Data Set  '),
+    dcc.Upload(
+        id='upload-data',
+        children=html.Div([
+            'Drag and Drop or ',
+            html.A('Select Files')
+        ]),
+        style={
+            'width': '100%',
+            'height': '60px',
+            'lineHeight': '60px',
+            'borderWidth': '1px',
+            'borderStyle': 'dashed',
+            'borderRadius': '5px',
+            'textAlign': 'center',
+            'margin': '10px'
+        },
+        # Allow multiple files to be uploaded
+        #multiple=True
+    ),
+dt.DataTable(
+        id='datatable',
+        rows=[{}]
+    ),
     dcc.Textarea(id='input',value='', style={'width': '100%'}),
 
     html.Label('Result '),
@@ -74,6 +100,17 @@ app.layout = html.Div(children=[
     html.Label('add to bc '),
     html.Div(id='output_bc')
 ])
+
+
+@app.callback(
+    Output('datatable', 'rows'),
+    [Input('upload-data', 'contents')])
+def update_figure(content):
+    if not content:
+        return []
+    dff = pd.read_csv(io.StringIO(content))
+    return dff.to_dict('records')
+
 
 #show blockchain
 @app.callback(
