@@ -1,50 +1,115 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import dash
+from dash.dependencies import Input, Output
 import dash_core_components as dcc
 import dash_html_components as html
 
-
-def generate_inputs():
-    print('getting value!')
-    f = open('C:\\VIVEK\\WORKING\\NOTES\\REGRASSION_TESTIN.txt', 'r')
-    current_value = str(f.read())
-    f.close()
-
-    print('current_value: ' + str(current_value))
-
-    input_box = [html.Label(html.Strong('value to write; currently: ')),
-                 dcc.Input(type='number', value=current_value, id='input_value')]
-
-    return input_box
-
-
 app = dash.Dash()
 
+
+tab_style = {
+    'color': '#0074D9',
+    'text-decoration': 'underline',
+    'margin': 30,
+    'cursor': 'pointer'
+}
+
 app.layout = html.Div([
-    html.H2('debug: getting and setting'),
+    dcc.Location(id='url'),
+    dcc.Link('Tab 1', href='/', style=tab_style),
+    dcc.Link('Tab 2', href='/ModelBlock', style=tab_style),
+    dcc.Link('Tab 3', href='/tab-3', style=tab_style),
+    html.Div([
 
-    html.Div(
-        generate_inputs()
-    ),
+        # Tab 1
+        html.Div(
+            id='DataBlock',
+            style={'display': 'none'},
+            children=[
+                html.H1('Tab 1'),
+                dcc.Dropdown(
+                    id='dropdown-1',
+                    options=[
+                        {'label': 'Tab 1: {}'.format(i), 'value': i}
+                        for i in ['A', 'B', 'C']
+                    ]
+                ),
+                html.Div(id='display-1')
+            ]
+        ),
 
-    html.Div(id='file_value_written')
+        # Tab 2
+        html.Div(
+            id='ModelBlock',
+            style={'display': 'none'},
+            children=[
+                html.H1('Tab 2'),
+                dcc.Dropdown(
+                    id='dropdown-2',
+                    options=[
+                        {'label': 'Tab 2: {}'.format(i), 'value': i}
+                        for i in ['A', 'B', 'C']
+                    ]
+                ),
+                html.Div(id='display-2')
+            ]
+        ),
 
-])  # app.layout
+        # Tab 3
+        html.Div(
+            id='tab-3',
+            style={'display': 'none'},
+            children=[
+                html.H1('Tab 3'),
+                dcc.Dropdown(
+                    id='dropdown-3',
+                    options=[
+                        {'label': 'Tab 3: {}'.format(i), 'value': i}
+                        for i in ['A', 'B', 'C']
+                    ]
+                ),
+                html.Div(id='display-3')
+            ]
+        ),
+    ])
+])
+
+
+def generate_display_tab(tab):
+    def display_tab(pathname):
+        if tab == 'DataBlock' and (pathname is None or pathname == '/'):
+            return {'display': 'block'}
+        elif pathname == '/{}'.format(tab):
+            return {'display': 'block'}
+        else:
+            return {'display': 'none'}
+    return display_tab
+
+
+for tab in ['DataBlock', 'ModelBlock', 'tab-3']:
+    app.callback(Output(tab, 'style'), [Input('url', 'pathname')])(
+        generate_display_tab(tab)
+    )
 
 
 @app.callback(
-    dash.dependencies.Output(component_id='file_value_written', component_property='children'),
-    [dash.dependencies.Input(component_id='input_value', component_property='value')])
-def update_file_value(value_to_write):
-    print('set value!')
-    print('value_to_write: ' + str(value_to_write))
-    f = open('./value.txt', 'w')
-    f.write(str(value_to_write))
-    f.close()
+    Output('display-1', 'children'),
+    [Input('dropdown-1', 'value')])
+def display_value(value):
+    return 'You have selected {}'.format(value)
 
-    return value_to_write
+
+@app.callback(
+    Output('display-2', 'children'),
+    [Input('dropdown-2', 'value')])
+def display_value(value):
+    return 'You have selected {}'.format(value)
+
+
+@app.callback(
+    Output('display-3', 'children'),
+    [Input('dropdown-3', 'value')])
+def display_value(value):
+    return 'You have selected {}'.format(value)
 
 
 if __name__ == '__main__':

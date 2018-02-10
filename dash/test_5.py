@@ -1,41 +1,54 @@
+# -*- coding: utf-8 -*-
 import dash
+from dash.dependencies import Input, Output
 import dash_core_components as dcc
 import dash_html_components as html
 
-import flask
-import glob
-import os
+app = dash.Dash(__name__)
 
-image_directory = 'C:\\Users\\vkbomb\\Downloads\\'
-list_of_images = [os.path.basename(x) for x in glob.glob('{}*.png'.format(image_directory))]
-static_image_route = '/static/'
-
-app = dash.Dash()
-
+all_options = {
+    'America': ['New York City', 'San Francisco', 'Cincinnati'],
+    'Canada': [u'Montréal', 'Toronto', 'Ottawa']
+}
 app.layout = html.Div([
-    dcc.Dropdown(
-        id='image-dropdown',
-        options=[{'label': i, 'value': i} for i in list_of_images],
-        value=list_of_images[0]
+    dcc.RadioItems(
+        id='countries-dropdown',
+        options=[{'label': k, 'value': k} for k in all_options.keys()],
+        value='America'
     ),
-    html.Img(id='image')
+
+    html.Hr(),
+
+    dcc.RadioItems(id='cities-dropdown'),
+
+    html.Hr(),
+
+    html.Div(id='display-selected-values')
 ])
 
 @app.callback(
-    dash.dependencies.Output('image', 'src'),
-    [dash.dependencies.Input('image-dropdown', 'value')])
-def update_image_src(value):
-    return static_image_route + value
+    dash.dependencies.Output('cities-dropdown', 'options'),
+    [dash.dependencies.Input('countries-dropdown', 'value')])
+def set_cities_options(selected_country):
+    return [{'label': i, 'value': i} for i in all_options[selected_country]]
 
-# Add a static image route that serves images from desktop
-# Be *very* careful here - you don't want to serve arbitrary files
-# from your computer or server
-@app.server.route('{}<image_path>.png'.format(static_image_route))
-def serve_image(image_path):
-    image_name = '{}.png'.format(image_path)
-    if image_name not in list_of_images:
-        raise Exception('"{}" is excluded from the allowed static files'.format(image_path))
-    return flask.send_from_directory(image_directory, image_name)
+@app.callback(
+    dash.dependencies.Output('cities-dropdown', 'value'),
+    [dash.dependencies.Input('cities-dropdown', 'options')])
+def set_cities_value(available_options):
+    return None
+
+@app.callback(
+    dash.dependencies.Output('display-selected-values', 'children'),
+    [dash.dependencies.Input('countries-dropdown', 'value'),
+     dash.dependencies.Input('cities-dropdown', 'value')])
+def set_display_children(selected_country, selected_city):
+    if selected_city is None:
+        return ''
+    else:
+        return u'{} is a city in {}'.format(
+            selected_city, selected_country,
+        )
 
 if __name__ == '__main__':
     app.run_server(debug=True)
