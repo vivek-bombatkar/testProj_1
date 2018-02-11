@@ -92,6 +92,13 @@ tab_style = {
 }
 app.layout = html.Div(children=[
     html.H1(children='Blockchain Backed Analytics'),
+    html.H6(children='Get the app_id & app_key from https://testnet.bigchaindb.com/login'),
+    html.Div([
+        dcc.Textarea(id='model_tx_id', placeholder='Enter app_id...', rows=0,style={'width': '20%', 'margin': '10px'})
+    ]),
+    html.Div([
+        dcc.Textarea(id='model_tx_id', placeholder='Enter app_key...', rows=1,style={'width': '20%', 'margin': '10px'})
+    ]),
     html.Hr(),
     dcc.Location(id='url'),
     dcc.Link('Data', href='/DataBlock', style=tab_style),
@@ -104,7 +111,7 @@ app.layout = html.Div(children=[
             id='DataBlock',
             style={'display': 'none'},
             children=[
-                html.H3('Data'),
+                html.H1('Data'),
                 dcc.Upload(
                     id='upload_input_data_set',
                     children=html.Div([
@@ -122,12 +129,6 @@ app.layout = html.Div(children=[
                         'margin': '10px'
                     }
                 ),
-                html.H6(children='HASH of the uploaded data...'),
-                html.Div(id='file_hash_data_set'),
-                html.Div(dt.DataTable(rows=[{}]), style={'display': 'none'}),
-
-                html.Button(id='Button_data_set', children='Add to blockchain', n_clicks=0),
-                html.Div(id=' '),
             ]
         ),
 
@@ -136,7 +137,7 @@ app.layout = html.Div(children=[
             id='ModelBlock',
             style={'display': 'none'},
             children=[
-                html.H3('Model'),
+                html.H1('Model'),
                 dcc.Upload(
                     id='upload_data_science_module',
                     children=html.Div([
@@ -157,12 +158,6 @@ app.layout = html.Div(children=[
                 html.Div([
                     dcc.Textarea(id='train_data_tx_id', placeholder='Enter Blockchain Transaction ID for Train data...', rows=1, style={'width': '50%','margin': '10px'})
                 ]),
-                html.H6(children='HASH of the uploaded data...'),
-                html.Div(id='file_hash_module'),
-                html.Div(dt.DataTable(rows=[{}]), style={'display': 'none'}),
-
-                html.Button(id='Button_module', children='Add to blockchain', n_clicks=0),
-                html.Div(id=' '),
             ]
         ),
 
@@ -171,7 +166,7 @@ app.layout = html.Div(children=[
             id='ResultBlock',
             style={'display': 'none'},
             children=[
-                html.H3('Result'),
+                html.H1('Result'),
                 dcc.Upload(
                     id='upload_result_data_set',
                     children=html.Div([
@@ -196,15 +191,16 @@ app.layout = html.Div(children=[
                     dcc.Textarea(id='input_data_tx_id', placeholder='Enter Blockchain Transaction ID for Input data...',
                                  rows=1, style={'width': '50%','margin': '10px'})
                 ]),
-                html.H6(children='HASH of the uploaded data...'),
-                html.Div(id='file_hash_result_data_set'),
-                html.Div(dt.DataTable(rows=[{}]), style={'display': 'none'}),
-
-                html.Button(id='Button_result_data_set', children='Add to blockchain', n_clicks=0),
-                html.Div(id=' '),
             ]
         ),
     ]),
+    html.H6(children='HASH of the uploaded data...'),
+    html.Div(id='file_hash'),
+    html.Div(dt.DataTable(rows=[{}]), style={'display': 'none'}),
+
+    html.Button(id='Button_1',  children='Add to blockchain', n_clicks=0),  
+    html.Div(id=' '),
+
     html.Label(' '),
     html.Div(id='output_bc'),
 
@@ -229,30 +225,7 @@ for tab in ['DataBlock', 'ModelBlock', 'ResultBlock']:
     )
 
 #show file hash
-@app.callback(Output('file_hash_data_set', 'children'),
-              [Input('upload_input_data_set', 'filename'),Input('upload_input_data_set', 'contents')])
-def upload_data_science_module(filename,contents):
-    global result_data_set
-    hash_contents = hash.sha256(contents.encode('ascii')).hexdigest()
-    return html.Div([
-        html.H6(hash_contents),
-        html.Hr(),  # horizontal lines
-    ])
-
-
-#show file hash
-@app.callback(Output('file_hash_module', 'children'),
-              [Input('upload_data_science_module', 'filename'),Input('upload_data_science_module', 'contents')])
-def upload_data_science_module(filename,contents):
-    global result_data_set
-    hash_contents = hash.sha256(contents.encode('ascii')).hexdigest()
-    return html.Div([
-        html.H6(hash_contents),
-        html.Hr(),  # horizontal lines
-    ])
-
-#show file hash
-@app.callback(Output('file_hash_result_data_set', 'children'),
+@app.callback(Output('file_hash', 'children'),
               [Input('upload_result_data_set', 'filename'),Input('upload_result_data_set', 'contents')])
 def upload_data_science_module(filename,contents):
     global result_data_set
