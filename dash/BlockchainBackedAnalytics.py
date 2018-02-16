@@ -4,132 +4,252 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, State, Output, Event
 import time
+from textblob import TextBlob
+import dash_table_experiments as dt
 import pandas as pd
 import io
+import base64
 import dash_table_experiments as dt
-#from textblob import TextBlob
+import blockChain as blockChain
 
-#impliment the blockhain
 import datetime as date
 import hashlib as hash
 
-global prev_block
+inputFileHash=''
+dataScienceModelHash=''
+resultDataHash=''
 
-class Block:
-    def __init__(self, index, timestamp, data, prev_hash):
-        self.index = index
-        self.timestamp = timestamp
-        self.data = data
-        self.prev_hash = prev_hash
-        self.hash = hash.sha256(data.encode('ascii')).hexdigest()
+input_data_set = ''
+data_science_module = ''
+result_data_set = ''
 
-    def __repr__(self):
-        return "{0} : {1}, {2}, {3} ".format(self.index, str(self.timestamp), self.data, self.prev_hash)
-
-def getGenesisBlock():
-    return Block(0, date.datetime.now(), "the genesis block", "0")
-
-def getNextBlock(prev_block, data):
-    index = prev_block.index + 1
-    timestamp = date.datetime.now()
-    data = data
-    hash = prev_block.hash
-    return Block(index, timestamp, data, hash)
-
-#the datascience module
-def getSentimentsPolarity(inputData):
-    return ""#str(TextBlob(inputData).sentiment.polarity)
-
-def addToBlockchain(prev_block,inputData):
-    result = getSentimentsPolarity(inputData)
-    time.sleep(1)
-    #add input to bc
-    new_block = getNextBlock(prev_block, hash.sha256(inputData.encode('ascii')).hexdigest())
-    bc.append(new_block)
-    prev_block = new_block
-    time.sleep(1)
-    #add code to bc
-    new_block = getNextBlock(prev_block, hash.sha256("TextBlob(inputData).sentiment.polarity".encode('ascii')).hexdigest())
-    bc.append(new_block)
-    prev_block = new_block
-    time.sleep(1)
-    #add result to bc
-    new_block = getNextBlock(prev_block, hash.sha256(result.encode('ascii')).hexdigest())
-    bc.append(new_block)
-    return ""
-
+n_clicks_data_set_cnt=0
+n_clicks_module_cnt=0
+##### THE DASH PAGE START
 app = dash.Dash()
+app.scripts.config.serve_locally = True
 
 app.config['suppress_callback_exceptions']=True
 
+all_options = {
+    'Data': [''],
+    'Module': [''],
+    'Result': ['']
+}
+
+
+pre_style = {
+    'whiteSpace': 'pre-wrap',
+    'wordBreak': 'break-all',
+    'whiteSpace': 'normal'
+}
+tab_style = {
+    'color': '#0074D9',
+    'text-decoration': 'underline',
+    'margin': 30,
+    'cursor': 'pointer'
+}
 app.layout = html.Div(children=[
     html.H1(children='Blockchain Backed Analytics'),
+    html.Hr(),
+    dcc.Location(id='url'),
+    dcc.Link('Data', href='/DataBlock', style=tab_style),
+    dcc.Link('Model', href='/ModelBlock', style=tab_style),
+    dcc.Link('Result', href='/ResultBlock', style=tab_style),
+    html.Div([
 
-    html.Label('Input Data Set  '),
-    dcc.Upload(
-        id='upload-data',
-        children=html.Div([
-            'Drag and Drop or ',
-            html.A('Select Files')
-        ]),
-        style={
-            'width': '100%',
-            'height': '60px',
-            'lineHeight': '60px',
-            'borderWidth': '1px',
-            'borderStyle': 'dashed',
-            'borderRadius': '5px',
-            'textAlign': 'center',
-            'margin': '10px'
-        },
-        # Allow multiple files to be uploaded
-        #multiple=True
-    ),
-dt.DataTable(
-        id='datatable',
-        rows=[{}]
-    ),
-    dcc.Textarea(id='input',value='', style={'width': '100%'}),
+        # Tab 1
+        html.Div(
+            id='DataBlock',
+            style={'display': 'none'},
+            children=[
+                html.H3('Data'),
+                dcc.Upload(
+                    id='upload_input_data_set',
+                    children=html.Div([
+                        'Input Data Set - Drag and Drop or ',
+                        html.A('Select a File')
+                    ]),
+                    style={
+                        'width': '50%',
+                        'height': '60px',
+                        'lineHeight': '60px',
+                        'borderWidth': '1px',
+                        'borderStyle': 'dashed',
+                        'borderRadius': '5px',
+                        'textAlign': 'center',
+                        'margin': '10px'
+                    }
+                ),
+                html.Div(id='input_data_set'),
+                html.Div(id='file_hash_data_set'),
+                html.Button(id='button_data_set', children='Add to blockchain input', n_clicks=0),
+                html.Div(id=' '),
+            ]
+        ),
 
-    html.Label('Result '),
-    html.Div(id='output'),
+        # Tab 2
+        html.Div(
+            id='ModelBlock',
+            style={'display': 'none'},
+            children=[
+                html.H3('Model'),
+                dcc.Upload(
+                    id='upload_data_science_module',
+                    children=html.Div([
+                        'Data_Science_Module - Drag and Drop or ',
+                        html.A('Select a File')
+                    ]),
+                    style={
+                        'width': '50%',
+                        'height': '60px',
+                        'lineHeight': '60px',
+                        'borderWidth': '1px',
+                        'borderStyle': 'dashed',
+                        'borderRadius': '5px',
+                        'textAlign': 'center',
+                        'margin': '10px'
+                    }
+                ),
+                html.Div([dcc.Textarea(id='train_data_tx_id', placeholder='Enter Blockchain Transaction ID for Train data...',value='', rows=1, style={'width': '50%','margin': '10px'}) ]),
+                html.Div(id='data_science_module'),
+                html.Div(id='file_hash_module'),
+                html.Button(id='Button_module', children='Add to blockchain', n_clicks=0),
+                html.Div(id=' '),
+            ]
+        ),
 
-    html.Button(id='Button_1',  children='Add to blockchain', n_clicks=0),
-    html.Div(id=' '),
+        # Tab 3
+        html.Div(
+            id='ResultBlock',
+            style={'display': 'none'},
+            children=[
+                html.H3('Result'),
+                dcc.Upload(
+                    id='upload_result_data_set',
+                    children=html.Div([
+                        'Result Data Set - Drag and Drop or ',
+                        html.A('Select a File')
+                    ]),
+                    style={
+                        'width': '50%',
+                        'height': '60px',
+                        'lineHeight': '60px',
+                        'borderWidth': '1px',
+                        'borderStyle': 'dashed',
+                        'borderRadius': '5px',
+                        'textAlign': 'center',
+                        'margin': '10px'
+                    }
+                ),
+                html.Div([dcc.Textarea(id='model_tx_id', placeholder='Enter Blockchain Transaction ID for Model...', rows=1, style={'width': '50%','margin': '10px'})]),
+                html.Div([dcc.Textarea(id='input_data_tx_id', placeholder='Enter Blockchain Transaction ID for Input data...',rows=1, style={'width': '50%','margin': '10px'})]),
+                html.Div(id='result_data_set'),
+                html.Div(id='file_hash_result_data_set'),
+                html.Button(id='Button_result_data_set', children='Add to blockchain', n_clicks=0),
+                html.Div(id=' '),
+            ]
+        ),
+    ]),
+    html.Label(' '),
+    html.Div(id='output_bc'),
 
-    html.Label('add to bc '),
-    html.Div(id='output_bc')
+    html.Pre(id='output', className='six columns')
 ])
+##### THE DASH PAGE ENDS
+app.css.append_css({
+    "external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"
+})
+
+def generate_display_tab(tab):
+    def display_tab(pathname):
+        if tab == 'DataBlock' and (pathname is None or pathname == '/'):
+            return {'display': 'block'}
+        elif pathname == '/{}'.format(tab):
+            return {'display': 'block'}
+        else:
+            return {'display': 'none'}
+    return display_tab
 
 
-@app.callback(
-    Output('datatable', 'rows'),
-    [Input('upload-data', 'contents')])
-def update_figure(content):
-    if not content:
-        return []
-    dff = pd.read_csv(io.StringIO(content))
-    return dff.to_dict('records')
+for tab in ['DataBlock', 'ModelBlock', 'ResultBlock']:
+    app.callback(Output(tab, 'style'), [Input('url', 'pathname')])(
+        generate_display_tab(tab)
+    )
 
+#show file hash start#
+@app.callback(Output('file_hash_data_set', 'children'),
+              [Input('upload_input_data_set', 'filename'),Input('upload_input_data_set', 'contents')])
+def upload_data_science_module(filename,contents):
+    global inputFileHash
+    inputFileHash = hash.sha256(contents.encode('ascii')).hexdigest()
+    return html.Div([ html.H6(inputFileHash)])
 
-#show blockchain
+@app.callback(Output('file_hash_module', 'children'),
+              [Input('upload_data_science_module', 'filename'),Input('upload_data_science_module', 'contents')])
+def upload_data_science_module(filename,contents):
+    global dataScienceModelHash
+    dataScienceModelHash = hash.sha256(contents.encode('ascii')).hexdigest()
+    return html.Div([html.H6(dataScienceModelHash)])
+
+@app.callback(Output('file_hash_result_data_set', 'children'),
+              [Input('upload_result_data_set', 'filename'),Input('upload_result_data_set', 'contents')])
+def upload_data_science_module(filename,contents):
+    global resultDataHash
+    resultDataHash = hash.sha256(contents.encode('ascii')).hexdigest()
+    return html.Div([html.H6(resultDataHash)])
+#show file hash start#
+#show file name start#
+@app.callback(Output('input_data_set', 'children'),
+              [Input('upload_input_data_set', 'filename') , Input('upload_input_data_set', 'contents')])
+def upload_input_data_set(filename, contents):
+    global input_data_set
+    input_data_set = contents
+    return html.Div([html.H6(filename)])
+
+@app.callback(Output('data_science_module', 'children'),
+              [Input('upload_data_science_module', 'filename'),Input('upload_data_science_module', 'contents')])
+def upload_data_science_module(filename,contents):
+    global data_science_module
+    data_science_module = contents
+    return html.Div([html.H6(filename)])
+
+@app.callback(Output('result_data_set', 'children'),
+              [Input('upload_result_data_set', 'filename'),Input('upload_result_data_set', 'contents')])
+def upload_data_science_module(filename,contents):
+    global result_data_set
+    result_data_set = contents
+    return html.Div([html.H6(filename)])
+#show file name#
+#add to blockchain
 @app.callback(
     Output('output_bc', 'children'),
-    [Input('Button_1', 'n_clicks')],
-    [State('input', 'value')])
-def update_output(n_clicks,value):
-    if n_clicks == 0:
+    [Input('button_data_set', 'n_clicks'), Input('Button_module', 'n_clicks'), Input('Button_result_data_set', 'n_clicks')],
+    [State('train_data_tx_id', 'value'),State('model_tx_id', 'value'),State('input_data_tx_id', 'value')])
+def update_output(n_clicks_data_set,n_clicks_module,n_clicks_result_data_set,value_train_data_tx_id,value_model_tx_id,value_input_data_tx_id):
+    global n_clicks_data_set_cnt
+    global n_clicks_module_cnt
+
+    if n_clicks_data_set == 0 and n_clicks_module == 0 and n_clicks_result_data_set == 0:
         return ''
     prev_block = bc[len(bc)-1]
-    addToBlockchain(prev_block,value)
-#            value="Input at blockchain index : {1}, Code at blockchain index : {2}, Result at blockchain index : {3} ,".format(str(bc[len(bc)-3].index()),str(bc[len(bc)-2].index()),str(bc[len(bc)-1].index())) ,
+    if n_clicks_data_set_cnt <> n_clicks_data_set:
+        data = "{{ hash_data: {} }}".format(inputFileHash)
+    elif n_clicks_module_cnt <> n_clicks_module:
+        data = "{{ hash_model: {}, Index_training_data: {} }}".format(dataScienceModelHash,value_train_data_tx_id)
+    else:
+        data = "{{ hash_result_data: {}, Index_model: {}, Index_input_data: {} }}".format(resultDataHash,value_model_tx_id,value_input_data_tx_id )
+
+    new_block = blockChain.getNextBlock(prev_block, data)
+    bc.append(new_block)
+    n_clicks_data_set_cnt = n_clicks_data_set
+    n_clicks_module_cnt = n_clicks_module
     return html.Div([
-        html.Div([dcc.Textarea(
-            value="blockchain index {} : Input Data Set \nblockchain index {} : Data science module / Code \nblockchain index {} : Result".format(str(bc[len(bc)-3].index),str(bc[len(bc)-2].index),str(bc[len(bc)-1].index)) ,
-                               id='dynamic-output',style={'width': '100%'})]),
+#        html.Div([dcc.Textarea(value="Block added to index {} ".format(str(bc[len(bc)-1].index)) ,id='dynamic-output',style={'width': '100%'})]),
+#        html.Div([html.H6("Index : Timestamp, Data", style={'width': '100%'})]),
         html.Div([
             dcc.Input(
-                value='{}'.format(block),
+                value='{} : {} , {} '.format(block.index,block.timestamp,block.data),
                 id='input-{}'.format(block.index),
                 style={'width': '100%'}
             )
@@ -138,15 +258,8 @@ def update_output(n_clicks,value):
         html.Div(id='dynamic-output')
     ])
 
-#show result
-@app.callback(
-    dash.dependencies.Output('output', 'children'),
-    [dash.dependencies.Input('input', 'value')])
-def update_output(value):
-    return (str(getSentimentsPolarity(str(value))))
-
 if __name__ == '__main__':
     #add the very first block to the blockchain
-    bc = [getGenesisBlock()]
-    prev_block = bc[0]
+    button_n_clicks = 0
+    bc = [blockChain.getGenesisBlock()]
     app.run_server(debug=True)
